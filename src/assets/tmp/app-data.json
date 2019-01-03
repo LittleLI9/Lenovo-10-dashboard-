@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "Alain",
+    "description": "Ng-zorro admin panel front-end framework"
+  },
+  "user": {
+    "name": "Admin",
+    "avatar": "./assets/tmp/img/avatar.jpg",
+    "email": "admin@lenovo.com"
+  },
+  "menu": [
+    {
+      "text": "",
+      "i18n": "main_navigation",
+      "group": false,
+      "hideInBreadcrumb": true,
+      "children": [
+        {
+          "text": "仪表盘",
+          "i18n": "dashboard",
+          "icon": "anticon anticon-dashboard",
+          "link":"/dashboard"
+        }
+      ]
+    }
+  ]
+}

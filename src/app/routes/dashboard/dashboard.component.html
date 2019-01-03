@@ -1,0 +1,324 @@
+<nz-tabset [nzTabPosition]="'top'" [nzType]="'line'" [nzAnimated]="true">
+    <nz-tab nzTitle="{{'resource-overview' | translate}}">
+        <!-- 虚拟机、网络带宽 -->
+        <div nz-row nzGutter="24" style="margin-top:-25px;">
+            <!-- 虚拟机使用数量 -->
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="12" style="margin-bottom:-23px;">
+                <nz-card [nzTitle]="'virtual-machine-quantity' |translate" [nzBordered]="false" [nzLoading]="false" class="offline-card mt-lg sales-card mb-0">
+                    <div class="px-lg" style="height:413px;">
+                        <div echarts [options]="virtual" class="demo-chart" [theme]='theme' (chartClick)="onChartEvent($event,'chartClick')" style="height:400px;"></div>
+                    </div>
+                </nz-card>
+            </div>
+            <!-- 网络带宽 -->
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="12">
+                <nz-card [nzTitle]="'network-bandwidth' | translate" [nzBordered]="false" [nzBodyStyle]="{'padding': '0px'}" class="offline-card mt-lg sales-card mb-0">
+                    <tag-select id="button" [expandable]='false'>
+                        <nz-tag *ngFor="let i of bandwidths; let idx = index" nzMode="checkable" [nzChecked]="i.value"
+                        (nzCheckedChange)="change_band(i,idx)">{{i.text}}</nz-tag>
+                    </tag-select>
+                    <div class="px-lg" style="margin-top:23px;height:435px" *ngIf="Internet == '最近一小时'">
+                        <div echarts [options]="hoursoption" class="demo-chart" id="hourInternet" [theme]='theme' style="height:400px"></div>
+                    </div>
+                    <div class="px-lg" style="margin-top:23px;height:435px" *ngIf="Internet == '最近一天'">
+                        <div echarts [options]="dayoption" class="demo-chart" id="dayInternet" [theme]='theme' style="height:400px;"></div>
+                    </div>
+                    <div class="px-lg" style="margin-top:23px;height:435px" *ngIf="Internet == '最近一周'">
+                        <div echarts [options]="weekoption" class="demo-chart" id="weekInternet" [theme]='theme' style="height:400px;"></div>
+                    </div>
+                </nz-card>
+            </div>
+        </div>
+        <!-- 资源总览 -->
+        <div nz-row nzGutter="24">
+            <!--资源使用总览-->
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="24">
+                <nz-card [nzTitle]="'overview.of.resource.usage' | translate" [nzBordered]="false" class="sales-card">
+                    <nz-tabset style="margin-top:-30px;">
+                        <nz-tab nzTitle="vCPU" (nzClick)="storUsage('cpu')">
+                            <div nz-row nzGutter="24" style="margin-bottom:-40px;">
+                                <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="14" nzXl="14" nzXXl="14">
+                                    <div>
+                                        <nz-card [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding.px': 24}">
+                                            <div echarts [options]="Cpu.salesBarDataCpu" id="cpu" class="demo-chart" [theme]='theme' (chartClick)='Resources()'></div>
+                                        </nz-card>
+                                    </div>
+                                </div>
+                                <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="8" nzXl="8" nzXXl="8" nzPush="1">
+                                    <div echarts [options]="Cpu.salesCakeDataCpu" id="cpuCake" class="demo-chart" [theme]='theme' style="margin-top:23px;"></div>
+                                </div>
+                            </div>
+                        </nz-tab>
+                        <nz-tab nzTitle="内存" (nzClick)="storUsage('memory')">
+                            <div nz-row nzGutter="24" style="margin-bottom:-40px;">
+                                <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="14" nzXl="14" nzXXl="14">
+                                    <div>
+                                        <nz-card [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding.px': 24}">
+                                            <div echarts id="memory" [options]="MemoryData.salesBarDataMemory" class="demo-chart" [theme]='theme' (chartClick)='Memory()'></div>
+                                        </nz-card>
+                                    </div>
+                                </div>
+                                <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="8" nzXl="8" nzXXl="8" nzPush="1">
+                                    <div echarts [options]="MemoryData.salesCakeDataMemory" id="memoryCake" class="demo-chart" [theme]='theme' style="margin-top:23px;" (chartClick)="Memory()"></div>
+                                </div>
+                            </div>
+                        </nz-tab>
+                        <nz-tab nzTitle="存储" (nzClick)="storUsage('storage')">
+                            <div nz-row nzGutter="24" style="margin-bottom:-40px;">
+                                <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="14" nzXl="14" nzXXl="14">
+                                    <div>
+                                        <nz-card [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding.px': 24}">
+                                            <div echarts id="storage" [options]="StorageData.salesBarDataStorage" class="demo-chart" [theme]='theme' (chartClick)='Storage()'></div>
+                                        </nz-card>
+                                    </div>
+                                </div>
+                                <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="8" nzXl="8" nzXXl="8" nzPush="1">
+                                    <div echarts [options]="StorageData.salesCakeDataStorage" id="storageCake" class="demo-chart" [theme]='theme' style="margin-top:23px;"></div>
+                                </div>
+                            </div>
+                        </nz-tab>
+                    </nz-tabset>
+                </nz-card>
+            </div>
+        </div>
+        <!-- db数据量、费用 -->
+        <div nz-row nzGutter="24">
+            <!--db数据量-->
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="12" style="margin-top:-30px;">
+                <nz-card [nzTitle]="'db-data-volume' | translate" [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding.px': 24}" class="offline-card mt-lg sales-card mb-0" style="height:535px">
+                    <div class="px-lg" style="height:420px;">
+                        <div echarts [options]='dbDataVolume' class="demo-chart" [theme]='theme' style="height:440px;"></div>
+                    </div>
+                </nz-card>
+            </div>
+            <!-- 费用状况 -->
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="12" style="margin-top:-30px;">
+                <nz-card [nzTitle]="'cost-status' | translate" [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding.px': 24}" class="offline-card mt-lg sales-card mb-0" style="height:535px">
+                    <div class="px-lg" style="height:440px;">
+                        <div echarts [options]='status' class="demo-chart" [theme]='theme' (chartClick)="onChartStatus($event, 'chartClick')" style="height:435px"></div>
+                    </div>
+                </nz-card>
+            </div>
+        </div>
+    </nz-tab>
+    <nz-tab nzTitle="{{'business-monitoring' | translate}}">
+        <!-- 虚机、负载 -->
+        <div nz-row nzGutter="8" style="margin-top:-25px;">
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="12" style="margin-bottom:-23px;">
+                <nz-card  [nzTitle]="'connection-number' | translate" [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding': '24px 24px 24px 24px'}" class="offline-card mt-lg sales-card mb-0">
+                    <tag-select id="button" [expandable]='false'>
+                        <nz-tag *ngFor="let i of connect; let idx = index" nzMode="checkable" [nzChecked]="i.value"
+                        (nzCheckedChange)="change_connect(i,idx)">{{i.text}}</nz-tag>
+                    </tag-select>
+                    <div class="px-lg" style="height:430px;">
+                        <div *ngIf="connectTime == '最近一小时'" echarts [options]="data_connect" id="contentHour" class="demo-chart" [theme]='theme' style="height:430px;"></div>
+                        <div *ngIf="connectTime == '最近一天'" echarts [options]="data_qps" id="contentDay" class="demo-chart" [theme]='theme' style="height:430px;"></div>
+                        <div *ngIf="connectTime == '最近一周'" echarts [options]="data_rt" id="contentWeek" class="demo-chart" [theme]='theme' style="height:430px;"></div>
+                    </div>
+            </nz-card>
+            </div>
+            <!-- 负载 -->
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="24" nzXXl="12">
+                <nz-card [nzTitle]="'load' | translate" [nzBordered]="false" class="sales-card" style="margin-top:25px">
+                    <tag-select id="button" [expandable]='false'>
+                        <nz-tag *ngFor="let i of loadTab; let idx = index" nzMode="checkable" [nzChecked]="i.value"
+                        (nzCheckedChange)="change_load(i,idx)">{{i.text}}</nz-tag>
+                    </tag-select>
+                    <div *ngIf="loadTime == '最近一小时'">
+                        <nz-tabset style="margin-top:-30px;">
+                            <nz-tab nzTitle="CPU" (nzClick)="LoadHour('cpu')">
+                                <div echarts id="CPU" [options]="data_cpu" class="demo-chart" [theme]='theme' style="height:400px;" (chartClick)="onChartLoad()"></div>
+                            </nz-tab>
+                            <nz-tab nzTitle="内存" (nzClick)="LoadHour('memory')">
+                                <div id="Memory" echarts [options]="data_memory" class="demo-chart" [theme]='theme' style="height:400px;" (chartClick)="onChartLoad()"></div>
+                            </nz-tab>
+                        </nz-tabset>
+                    </div>
+                    <div *ngIf="loadTime == '最近一天'">
+                        <nz-tabset style="margin-top:-30px;">
+                            <nz-tab nzTitle="CPU" (nzClick)="LoadHour('cpu')">
+                                <div echarts id="cpuDay" [options]="data_cpuDay" class="demo-chart" [theme]='theme' style="height:400px;" (chartClick)="onChartLoad()"></div>
+                            </nz-tab>
+                            <nz-tab nzTitle="内存" (nzClick)="LoadHour('memory')">
+                                <div id="MemoryDay" echarts [options]="data_memoryDay" class="demo-chart" [theme]='theme' style="height:400px;" (chartClick)="onChartLoad()"></div>
+                            </nz-tab>
+                        </nz-tabset>
+                    </div>
+                    <div *ngIf="loadTime == '最近一周'">
+                        <nz-tabset style="margin-top:-30px;">
+                            <nz-tab nzTitle="CPU" (nzClick)="LoadHour('cpu')">
+                                <div echarts id="cpuWeek" [options]="data_cpuWeek" class="demo-chart" [theme]='theme' style="height:400px;" (chartClick)="onChartLoad()"></div>
+                            </nz-tab>
+                            <nz-tab nzTitle="内存" (nzClick)="LoadHour('memory')">
+                                <div id="MemoryWeek" echarts [options]="data_memoryWeek" class="demo-chart" [theme]='theme' style="height:400px;" (chartClick)="onChartLoad()"></div>
+                            </nz-tab>
+                        </nz-tabset>
+                    </div>
+                </nz-card>
+            </div>
+        </div>
+        <!-- 健康度、数据库 -->
+        <div nz-row nzGutter="8">
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="12" nzXXl="12" style="margin-top:-25px;">
+                <nz-card [nzTitle]="'health-degree' | translate" [nzLoading]="false" [nzBordered]="false" class="offline-card mt-lg sales-card mb-0">
+                    <div class="card_jiankangdu_DIV" id="healthDu">
+                        <div class="jiankangdu_DIV" id="health_set">
+                            <a href="#" *ngFor="let health of Health; let idx = index" nz-tooltip class="td_green" (click)="click_health(health,idx)" class={{health.class}} [nzTitle]="health.title">{{health.name}}</a>
+                        </div>
+                    </div>
+                </nz-card>
+            </div>
+            <div nz-col nzXs="24" nzSm="24" nzMd="24" nzLg="24" nzXl="12" nzXXl="12" style="margin-top:-25px;">
+                <nz-card [nzTitle]="'data-base' | translate" [nzLoading]="false" [nzBordered]="false" [nzBodyStyle]="{'padding': '24px 24px 24px 24px'}"
+                    class="offline-card mt-lg sales-card mb-0" [nzExtra]="extra_db">
+                    <ng-template #extra_db style="margin-top:50px;">
+                        <nz-radio-group [(ngModel)]="severalBaseType" (ngModelChange)="change_severalType_db()"id="buttonJK">
+                            <label nz-radio-button [nzValue]="'qps_amount'">QPS</label>
+                            <label nz-radio-button [nzValue]="'tps_amount'">TPS</label>
+                        </nz-radio-group>
+                    </ng-template>
+                    <div class="px-lg">
+                        <div *ngIf="severalBaseType == 'qps_amount'" echarts [options]="data_db" class="demo-chart" [theme]='theme'></div>
+                        <div *ngIf="severalBaseType == 'tps_amount'" echarts [options]="data_db_ops" class="demo-chart" [theme]='theme'></div>
+                    </div>
+                </nz-card>
+            </div>
+        </div>
+    </nz-tab>
+</nz-tabset>
+
+<!-- db数据量折线图 -->
+<nz-modal [nzWidth]="900" [(nzVisible)]="isVisible" [nzTitle]="'db.data.volume.detailed' | translate" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()">
+    <div id="four" class="demo-chart" style="height: 500px;width:800px;">
+    </div>
+</nz-modal>
+
+<!-- 费用状况折线图 -->
+<nz-modal [nzWidth]="900" [(nzVisible)]="isVisible1" [nzTitle]="'detailed-cost-situation' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <nz-card [nzBordered]="false" [nzLoading]="false" style="margin:-20px;margin-left:0px;">
+        <div echarts [options]="optionStatus" id="status" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+    </nz-card>
+</nz-modal>
+
+<!-- 虚拟机使用状况曲线图 -->
+<nz-modal [nzWidth]="900" [(nzVisible)]="virtual1" [nzTitle]="'virtual.machine.business.line.usage.status' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <nz-card [nzBordered]="false" [nzLoading]="false" style="position:relative;margin:-20px;margin-left:0px">
+        <tag-select id="button" [expandable]='false' class="detailTime" style="top:0px;">
+            <nz-tag *ngFor="let i of VirtualDetail; let idx = index" nzMode="checkable" [nzChecked]="i.value"
+            (nzCheckedChange)="changeVirtual(i,idx)">{{i.text}}
+            </nz-tag>
+        </tag-select>
+        <div *ngIf="virtualTime == '最近一个月'" echarts [options]="Vcurve" id="Vcurve" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+        <div *ngIf="virtualTime == '最近三个月'" echarts [options]="VcurveThree" id="VcurveThree" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+        <div *ngIf="virtualTime == '最近一年'" echarts [options]="VcurveYear" id="VcurveYear" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+    </nz-card>
+</nz-modal>
+
+<!-- CPU使用详细 -->
+<nz-modal [nzWidth]="900" [(nzVisible)]="detailed" [nzTitle]="'cpu.resource.usage.details' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <nz-card [nzBordered]="false" [nzLoading]="false" [nzBodyStyle]="{'padding': '24px 24px 24px 24px'}" style="position:relative;width:800px;margin:-20px;margin-left:0px">
+        <tag-select id="button" [expandable]='false' class="detailTime">
+            <nz-tag *ngFor="let i of resources; let idx = index" nzMode="checkable" [nzChecked]="i.value"
+            (nzCheckedChange)="change(i,idx)">{{i.text}}
+            </nz-tag>
+        </tag-select>
+        <div class="px-lg" style="margin-left:-25px">
+            <div *ngIf="resourceUse == '最近一个月'" echarts [options]="dataCpuOne" id="cpuOne" [theme]='theme' class="demo-chart" style="width:800px;height:400px"></div> 
+            <div *ngIf="resourceUse == '最近三个月'" echarts [options]="dataCpuThree" id="cpuThree" [theme]='theme' class="demo-chart" style="width:800px;height:400px;"></div>
+            <div *ngIf="resourceUse == '最近一年'" echarts [options]="dataCpuYear" id="cpuYear" [theme]='theme' class="demo-chart" style="width:800px;height:400px;"></div>           
+        </div>
+    </nz-card>
+</nz-modal>
+
+<!-- 内存使用详细 -->
+<nz-modal [nzWidth]="900" [(nzVisible)]="memory" [nzTitle]="'memory.resource.usage.details' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <nz-card [nzBordered]="false" [nzLoading]="false" [nzBodyStyle]="{'padding': '24px 24px 24px 24px'}" style="position:relative;width:800px;margin:-20px;margin-left:0px">
+        <tag-select id="button" [expandable]='false' class="detailTime">
+            <nz-tag *ngFor="let i of resources_memory; let idx = index" nzMode="checkable" [nzChecked]="i.value" (nzCheckedChange)="changeMemory(i,idx)">{{i.text}}
+            </nz-tag>
+        </tag-select>
+        <!--  -->
+        <div class="px-lg" style="margin-left:-25px">
+            <div *ngIf="resourcesMemory == '最近一个月'" echarts [options]="memoryDataOne" id="memoryOne" class="demo-chart" [theme]='theme'style="width:800px;height:400px;"></div> 
+            <div *ngIf="resourcesMemory == '最近三个月'" echarts [options]="memoryDataThree" id="memoryThree" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+            <div *ngIf="resourcesMemory == '最近一年'" echarts [options]="memoryDataYear" id="memoryYear" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+        </div>
+    </nz-card>
+</nz-modal>
+
+<!-- 存储使用详细 -->
+<nz-modal [nzWidth]="900" [(nzVisible)]="storage" [nzTitle]="'storage.resource.usage.details' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <nz-card [nzBordered]="false" [nzLoading]="false" [nzBodyStyle]="{'padding': '24px 24px 24px 24px'}" style="position:relative;width:800px;margin:-20px;margin-left:0px">
+        <tag-select id="button" [expandable]='false' class="detailTime">
+            <nz-tag *ngFor="let i of resources_storage; let idx = index" nzMode="checkable" [nzChecked]="i.value"
+            (nzCheckedChange)="changeSrotage(i,idx)">{{i.text}}
+            </nz-tag>
+        </tag-select>
+        <div class="px-lg" style="margin-left:-25px">
+                <div *ngIf="resourcesStorage == '最近一个月'" echarts [options]="storageDataOne" id="storageOne" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div> 
+                <div *ngIf="resourcesStorage == '最近三个月'" echarts [options]="storageDataThree" id="storageThree" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+                <div *ngIf="resourcesStorage == '最近一年'" echarts [options]="storageDataYear" id="storageYear" class="demo-chart" [theme]='theme' style="width:800px;height:400px;"></div>
+        </div>
+    </nz-card>
+</nz-modal>
+
+<!-- 业务线_负载  详情模态框 -->
+<nz-modal [nzWidth]="1000" [(nzVisible)]="loadDetail" [nzTitle]="'load.business.line.detail' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <div nz-row nzGutter="24" style="margin-bottom:10px;position:relative;right:-120px;">
+        <div nz-col nzLg="10"></div>
+        <div nz-col nzLg="2" style="font-size:16px;line-height:33px;margin-right:-20px;">筛选：</div>
+        <div nz-col nzLg="5">
+            <nz-select nzAllowClear nzShowSearch name="a" style="width:120px;" [(ngModel)]="selectedName" (ngModelChange)="selectName($event)">
+                <nz-option *ngFor="let i of loadSituation" nzLabel="{{i}}" nzValue="{{i}}"></nz-option>
+            </nz-select>
+        </div>
+        <div nz-col nzLg="2" style="font-size:16px;line-height:33px;margin-left:-65px">大于</div>
+        <div nz-col nzLg="4" style="margin-right:-5px;margin-left:-30px">
+            <input id="inputDetail" nz-input placeholder="请输入数值" [(ngModel)]="loadValue">
+        </div>
+        <div nz-col nzLg="1" style="font-size:16px;line-height:33px;">%</div>
+    </div>
+        
+    <nz-table #filterTable [nzData]="load" [nzPageSize] = "5">
+        <thead (nzSortChange)="sort($event)" nzSingleSort>
+            <tr>
+                <th>{{'business-line-id' | translate}}</th>
+                <th>{{'business-line-name' | translate}}</th>
+                <th nzShowSort nzSortKey="CPU">{{'cpu' | translate}}</th>
+                <th nzShowSort nzSortKey="memory">{{'memory' | translate}}</th>
+                <!-- <th nzShowSort nzSortKey="iops">{{'iops' | translate}}</th>
+                <th>{{'optimization-suggestion' | translate}}</th> -->
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let data of filterTable.data">
+                <td>{{data.business_id}}</td>
+                <td>{{data.business_name}}</td>
+                <td>{{data.CPU}}%</td>
+                <td>{{data.memory}}%</td>
+                <!-- <td>{{data.iops}}</td>
+                <td>{{data.suggestion}}</td> -->
+            </tr>
+        </tbody>
+    </nz-table>
+</nz-modal>
+
+<!-- 业务线_健康度  详情模态框 -->
+<nz-modal [nzWidth]="1000" [(nzVisible)]="healthDetail" [nzTitle]="'load.business.line.detail' | translate" (nzOnCancel)="handleCancel1()" (nzOnOk)="handleOk1()">
+    <nz-table #basicTable [nzData]="data_health">
+        <thead>
+            <tr>
+                <th>{{'url' | translate}}</th>
+                <th>{{'state-code' | translate}}</th>
+                <th>{{'response-time' | translate}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let data of basicTable.data">
+                <td>{{data.url}}</td>
+                <td>{{data.status}}</td>
+                <td>{{data.responseTime}}</td>
+            </tr>
+        </tbody>
+    </nz-table>
+</nz-modal>
